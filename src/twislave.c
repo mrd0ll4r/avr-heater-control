@@ -5,11 +5,9 @@
 * Author: Leo
 * Source: https://rn-wissen.de/wiki/index.php/TWI_Slave_mit_avr-gcc
 *
-* We support all three types of I2C transactions:
-* - Pure write: One byte can be written to address 0x0.
-*	This is the status register. Consult main.c for an explanation.
+* We support the following types of I2C transactions:
 * - Pure read: 2 bytes can be read, starting from address 0x0.
-*    The data consists of one status byte (at 0x0) followed by one byte for the heating level.
+*    The data consists of one status byte (at 0x0) followed by one byte for the heating level and free relay states.
 * - Write+read: This is actually just a read from some given address (the one byte written).
 */
 

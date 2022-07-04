@@ -58,7 +58,10 @@ ISR(TIMER1_COMPA_vect) // every 1s
 }
 
 int main(void) {
+    // Current heater level and state of the two extra relays.
     uint8_t heater_level = 0;
+    uint8_t relay_4 = 0;
+    uint8_t relay_5 = 0;
 
     // Set inputs/outputs.
     io_init();
@@ -98,10 +101,23 @@ int main(void) {
         {
             cli();
 
-            if (i2cdata[1] < NUM_HEATER_LEVELS)
-                heater_level = i2cdata[1];
-            else
-                i2cdata[1] = heater_level;
+            // Read I2C data.
+            uint8_t i2c_data_byte = i2cdata[1];
+            // Check if the heater level is valid
+            if ((i2c_data_byte & I2C_HEATER_BIT_MASK) < NUM_HEATER_LEVELS) {
+                // If yes: extract values.
+                heater_level = (i2c_data_byte & I2C_HEATER_BIT_MASK);
+                relay_4 = (i2c_data_byte & I2C_RELAY_4_MASK);
+                relay_5 = (i2c_data_byte & I2C_RELAY_5_MASK);
+            } else {
+                // If not: ignore I2C input, write current state to I2C buffer.
+                i2c_data_byte = heater_level;
+                if (relay_4)
+                    i2c_data_byte |= I2C_RELAY_4_MASK;
+                if (relay_5)
+                    i2c_data_byte |= I2C_RELAY_5_MASK;
+                i2cdata[1] = i2c_data_byte;
+            }
 
             sei();
         }
@@ -110,11 +126,12 @@ int main(void) {
         if (!(PINC & VENTILATION_ACTIVE_PIN)) {
             // If the pin is low, ventilation is on, and we're good.
             i2cdata[0] &= ~I2C_BIT_HEATER_DISABLED;
-            drive_relays(heater_level, 0, 0, timer_ticks);
+            drive_relays(heater_level, relay_4, relay_5, timer_ticks);
         } else {
             // If the pin is high, the ventilation is off, and thus we won't heat.
+            // We still set the free relays.
             i2cdata[0] |= I2C_BIT_HEATER_DISABLED;
-            drive_relays(0, 0, 0, 0);
+            drive_relays(0, relay_4, relay_5, 0);
         }
 
         _delay_ms(10);

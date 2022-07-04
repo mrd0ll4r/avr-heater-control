@@ -14,12 +14,20 @@
 #include <stdint.h>
 
 // I2C data buffer size.
-// One byte status register plus one byte heater level (and maybe the other relays, in the future).
+// One byte status register plus one byte with 6 bits heater level and two bits for the extra two relays.
 #define i2c_buffer_size 2
+
+// Masks for the I2C data byte.
+// Rightmost (low) six bits are for heater level.
+#define I2C_HEATER_BIT_MASK 0x3F
+// Leftmost (high) two bits are for the free relays.
+#define I2C_RELAY_4_MASK 0x40
+#define I2C_RELAY_5_MASK 0x80
 
 // I2C slave address.
 #define I2C_SLAVE_ADDRESS 0x23
 
+// Positions in the I2C status byte.
 #define I2C_BIT_HEATER_DISABLED 0x01
 #define I2C_BIT_WDT_RESET 0x02
 

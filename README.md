@@ -11,11 +11,13 @@ There is a connection between this MCU and the one [controlling the ventilation]
 The heating is only activated if the other MCU indicates the incoming ventilation is running.
 This connection is usually pulled up, and driven low by the ventilation MCU while the ventilation is running.
 
-Additionally, there are two relays which have no use (yet).
+Additionally, there are two extra relays which can be used for other things.
 
 All of this is controlled via I2C.
 One status byte indicates whether there was a watchdog reset and whether heating is disabled due to the ventilation not running.
-The other byte is used to set the heating level.
+The other byte is used to set the heating level and the free relays.
+The lower six bits dictate the heating level, the upper two bits control the extra relays.
+If the heater level written to I2C is invalid, the entire I2C control byte will be ignored and overwritten with the current state.
 
 ## License
 
